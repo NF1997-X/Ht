@@ -177,8 +177,9 @@
   -ms-overflow-style: none;
   /* IE 10+ */
   -webkit-overflow-scrolling: touch;
-  margin: 0 -20px;
+  margin: 0;
   scroll-behavior: smooth;
+  padding: 0 20px;
 }
 .hs__header {
   display: flex;
@@ -280,10 +281,10 @@
   position: absolute;
   width: 10px;
   height: 1px;
-  right: calc(10px * 2 * -1);
+  right: calc(6px * 2 * -1);
 }
 .hs__item:first-child {
-  margin-left: calc(10px * 2);
+  margin-left: 0;
 }
 .hs__item__description {
   z-index: 1;
