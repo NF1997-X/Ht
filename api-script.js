@@ -550,10 +550,20 @@ function closeImageModal() {
 }
 
 async function saveImageData() {
+  console.log('=== SAVE IMAGE DEBUG ===');
   const pageData = getCurrentPageData();
+  console.log('Page Data:', pageData);
+  console.log('Editing Section:', editingSection);
+  
   const section = pageData.sections.find(s => s.id == editingSection);
   
-  if (!section) return;
+  if (!section) {
+    console.error('Section not found!');
+    alert('Error: Section not found');
+    return;
+  }
+  
+  console.log('Section found:', section);
   
   let imageUrl, imageLarge, title, subtitle;
   
@@ -573,8 +583,10 @@ async function saveImageData() {
     subtitle = document.getElementById('imageSubtitle2').value.trim();
   }
   
+  console.log('Image data:', { imageUrl, title, subtitle });
+  
   if (!imageUrl || !title) {
-    alert('Please fill in required fields');
+    alert('Please fill in required fields (URL and Title)');
     return;
   }
   
@@ -588,6 +600,7 @@ async function saveImageData() {
       item.imageLarge = imageLarge;
       item.title = title;
       item.subtitle = subtitle;
+      console.log('Updated item:', item);
     }
   } else {
     // Add new item
@@ -602,15 +615,29 @@ async function saveImageData() {
       subtitle: subtitle
     };
     section.items.push(newItem);
+    console.log('Added new item:', newItem);
   }
   
+  console.log('Saving to database...');
+  console.log('Current Page:', currentPage);
+  console.log('Sections to save:', pageData.sections);
+  
   // Save to database
-  const saved = await savePage(currentPage, pageData.sections);
-  if (saved) {
-    closeImageModal();
-    await loadCurrentPage();
-  } else {
-    alert('Error saving image');
+  try {
+    const saved = await savePage(currentPage, pageData.sections);
+    console.log('Save result:', saved);
+    
+    if (saved) {
+      console.log('✅ Image saved successfully');
+      closeImageModal();
+      await loadCurrentPage();
+    } else {
+      console.error('❌ Save failed - API returned false');
+      alert('Error saving image to database. Check console for details.');
+    }
+  } catch (error) {
+    console.error('❌ Save error:', error);
+    alert('Error saving image: ' + error.message);
   }
 }
 
