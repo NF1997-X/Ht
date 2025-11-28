@@ -681,7 +681,8 @@ async function openPageManager() {
         </div>
         <div class="page-item__actions">
           ${!isCurrent ? `<button class="btn-sm" onclick="switchPage('${page.id}')">Switch</button>` : '<span class="badge">Current</span>'}
-          ${page.id !== 'default' ? `<button class="btn-sm btn-danger" onclick="deletePageConfirm('${page.id}')">Delete</button>` : ''}
+          <button class="btn-sm" onclick="editPageName('${page.id}', '${page.name.replace(/'/g, "\\'")}')">Edit</button>
+          ${page.id !== 'default' ? `<button class="btn-sm btn-danger" onclick="deletePageConfirm('${page.id}', '${page.name.replace(/'/g, "\\'")}')">Delete</button>` : ''}
         </div>
       </div>
     `;
@@ -721,8 +722,46 @@ async function switchPage(pageId) {
   await loadCurrentPage();
 }
 
-async function deletePageConfirm(pageId) {
-  if (!confirm('Are you sure you want to delete this page?')) return;
+async function editPageName(pageId, currentName) {
+  const newName = prompt('Enter new page name:', currentName);
+  if (!newName || newName.trim() === '') {
+    alert('Page name cannot be empty');
+    return;
+  }
+  
+  if (newName.trim() === currentName) {
+    return; // No change
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages/${pageId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName.trim() })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      alert('✅ Page name updated!');
+      // Refresh page list
+      await openPageManager();
+      // Reload current page if editing current page
+      if (pageId === currentPage) {
+        await loadCurrentPage();
+      }
+    } else {
+      alert('❌ Failed to update page name');
+    }
+  } catch (error) {
+    console.error('Error updating page name:', error);
+    alert('❌ Error updating page name. Make sure backend is running.');
+  }
+}
+
+async function deletePageConfirm(pageId, pageName) {
+  const confirmed = confirm(`⚠️ Delete Page: "${pageName}"\n\nAre you sure? This action cannot be undone.\nAll sections and images in this page will be permanently deleted.`);
+  if (!confirmed) return;
   
   const success = await deletePage(pageId);
   if (success) {
