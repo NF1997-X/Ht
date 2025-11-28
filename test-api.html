@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1c1c1e;
+      color: white;
+    }
+    .test-section {
+      background: #2c2c2e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0051d5;
+    }
+    .result {
+      background: #1a1a1c;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .success { color: #34c759; }
+    .error { color: #ff3b30; }
+    input {
+      background: #3c3c3e;
+      border: 1px solid #555;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      width: 300px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Gallery API Test</h1>
+  
+  <div class="test-section">
+    <h2>1. Backend Health Check</h2>
+    <button onclick="testHealth()">Test Connection</button>
+    <div id="health-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Get All Pages</h2>
+    <button onclick="testGetPages()">Get Pages</button>
+    <div id="pages-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Create New Page</h2>
+    <input type="text" id="newPageName" placeholder="Enter page name" value="Test Page">
+    <button onclick="testCreatePage()">Create Page</button>
+    <div id="create-result" class="result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Get Default Page</h2>
+    <button onclick="testGetPage()">Get Default Page</button>
+    <div id="page-result" class="result"></div>
+  </div>
+
+  <script>
+    // Auto-detect environment
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000/api'
+      : '/api';
+
+    // Show current environment
+    document.addEventListener('DOMContentLoaded', () => {
+      const env = API_BASE_URL.includes('localhost') ? '🖥️ Local Development' : '🌐 Production (Vercel)';
+      document.querySelector('h1').textContent = `🧪 Gallery API Test - ${env}`;
+    });
+
+    function showResult(elementId, message, isSuccess = true) {
+      const element = document.getElementById(elementId);
+      element.className = 'result ' + (isSuccess ? 'success' : 'error');
+      element.textContent = message;
+    }
+
+    async function testHealth() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        const data = await response.json();
+        showResult('health-result', '✅ Backend is running!\n\n' + JSON.stringify(data, null, 2), true);
+      } catch (error) {
+        showResult('health-result', '❌ Backend not running!\n\nError: ' + error.message + '\n\nMake sure to start backend:\ncd backend\nnpm start', false);
+      }
+    }
+
+    async function testGetPages() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/pages`);
+        const data = await response.json();
+        showResult('pages-result', '✅ Success!\n\n' + JSON.stringify(data, null, 2), true);
+      } catch (error) {
+        showResult('pages-result', '❌ Error: ' + error.message, false);
+      }
+    }
+
+    async function testCreatePage() {
+      const name = document.getElementById('newPageName').value.trim();
+      if (!name) {
+        showResult('create-result', '❌ Please enter a page name', false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/pages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showResult('create-result', '✅ Page created successfully!\n\n' + JSON.stringify(data, null, 2), true);
+        } else {
+          showResult('create-result', '❌ Failed to create page\n\n' + JSON.stringify(data, null, 2), false);
+        }
+      } catch (error) {
+        showResult('create-result', '❌ Error: ' + error.message + '\n\nMake sure backend is running!', false);
+      }
+    }
+
+    async function testGetPage() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/pages/default`);
+        const data = await response.json();
+        showResult('page-result', '✅ Success!\n\n' + JSON.stringify(data, null, 2), true);
+      } catch (error) {
+        showResult('page-result', '❌ Error: ' + error.message, false);
+      }
+    }
+
+    // Run health check on load
+    window.onload = () => {
+      testHealth();
+    };
+  </script>
+</body>
+</html>

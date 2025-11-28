@@ -1,0 +1,17 @@
+{
+  "name": "gallery-app",
+  "version": "1.0.0",
+  "description": "Modern gallery application with Neon PostgreSQL Database",
+  "scripts": {
+    "dev": "cd backend && npm start",
+    "test": "echo 'Open test-api.html in browser'",
+    "deploy": "chmod +x deploy-vercel.sh && ./deploy-vercel.sh"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "nanoid": "^3.3.7"
+  },
+  "keywords": ["gallery", "neon", "postgresql", "vercel"],
+  "author": "NF1997-X",
+  "license": "MIT"
+}

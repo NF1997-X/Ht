@@ -1,5 +1,8 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+// Auto-detect environment: production (Vercel) or local development
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api'
+  : '/api';
 
 // State Management
 let currentPage = 'default';
@@ -60,10 +63,16 @@ async function createPage(name) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const result = await response.json();
     return result.success ? result.data : null;
   } catch (error) {
     console.error('Error creating page:', error);
+    console.error('Make sure backend server is running: cd backend && npm start');
     return null;
   }
 }
@@ -701,6 +710,8 @@ async function createNewPage() {
     currentPage = result.id;
     document.getElementById('createPageModal').style.display = 'none';
     await loadCurrentPage();
+  } else {
+    alert('Error creating page. Make sure the backend server is running on http://localhost:3000');
   }
 }
 

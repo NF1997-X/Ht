@@ -21,6 +21,8 @@ Modern gallery application dengan backend Node.js + Express dan Neon PostgreSQL 
 
 ## 🛠️ Setup Instructions
 
+### Local Development
+
 ### 1. Install Backend Dependencies
 
 ```bash
@@ -64,6 +66,35 @@ python3 -m http.server 8000
 ```
 
 Kemudian buka `http://localhost:8000`
+
+### Vercel Deployment (Production)
+
+Deploy to Vercel untuk production-ready hosting:
+
+1. **Push to GitHub:**
+```bash
+git add .
+git commit -m "Deploy to Vercel"
+git push origin main
+```
+
+2. **Import to Vercel:**
+- Go to [vercel.com](https://vercel.com)
+- Import your repository `NF1997-X/Ht`
+- Add Environment Variable: `DATABASE_URL` (your Neon database URL)
+- Deploy!
+
+3. **Access:**
+Your app akan available di `https://your-project.vercel.app`
+
+**Kelebihan Vercel:**
+- ✅ Auto HTTPS
+- ✅ Auto deploy bila push to GitHub
+- ✅ Serverless backend (no server management)
+- ✅ Free hosting
+- ✅ Global CDN
+
+Lihat [DEPLOY.md](DEPLOY.md) untuk panduan lengkap deployment.
 
 ## 📊 Database Schema
 
