@@ -208,8 +208,8 @@ function generateGallery() {
                 </button>
               </div>
             ` : ''}
-            <a href="${imgLarge}" data-lg-size="1200-1200" class="hs__item__image__wrapper">
-              <img class="hs__item__image" src="${imgUrl}" alt="${item.title}"/>
+            <a href="${imgLarge}" class="hs__item__image__wrapper">
+              <img class="hs__item__image" src="${imgUrl}" alt="${item.title}" loading="lazy"/>
             </a>
             <div class="hs__item__description">
               <span class="hs__item__title">${item.title}</span>
@@ -258,7 +258,11 @@ function generateGallery() {
           actualSize: false,
           download: false,
           counter: true,
-          selector: '.hs__item__image__wrapper'
+          selector: '.hs__item__image__wrapper',
+          mode: 'lg-fade',
+          hideControlOnEnd: true,
+          closable: true,
+          escKey: true
         });
       }
     });
