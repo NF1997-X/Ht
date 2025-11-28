@@ -1,4 +1,5 @@
-// work in progress - needs some refactoring and will drop JQuery i promise :)
+// API Configuration
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // State Management
 let currentPage = 'default';
@@ -8,82 +9,108 @@ let editingSection = null;
 let editingItem = null;
 let currentTab = 'url';
 let uploadedImageData = null;
+let currentPageData = null;
 
-// Pages Storage
-let pages = JSON.parse(localStorage.getItem('galleryPages')) || {
-  default: {
-    name: 'My Gallery',
-    sections: []
+// API Functions
+async function fetchPages() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages`);
+    const result = await response.json();
+    return result.success ? result.data : [];
+  } catch (error) {
+    console.error('Error fetching pages:', error);
+    return [];
   }
-};
-
-// Dynamic Data Configuration
-const galleryData = [
-  {
-    id: 1,
-    headline: "Nature Collection",
-    items: [
-      { id: 112, title: "Mountain View", subtitle: "Landscape" },
-      { id: 122, title: "Forest Path", subtitle: "Nature" },
-      { id: 132, title: "Ocean Waves", subtitle: "Seascape" },
-      { id: 142, title: "Desert Dunes", subtitle: "Adventure" },
-      { id: 152, title: "Northern Lights", subtitle: "Sky" },
-      { id: 162, title: "Tropical Beach", subtitle: "Paradise" },
-      { id: 172, title: "Waterfall", subtitle: "Nature" },
-      { id: 182, title: "Sunset", subtitle: "Evening" },
-      { id: 192, title: "Canyon", subtitle: "Landscape" },
-      { id: 202, title: "Lake View", subtitle: "Peaceful" }
-    ]
-  },
-  {
-    id: 2,
-    headline: "Urban Life",
-    items: [
-      { id: 213, title: "City Lights", subtitle: "Night" },
-      { id: 223, title: "Architecture", subtitle: "Modern" },
-      { id: 233, title: "Street Art", subtitle: "Culture" },
-      { id: 243, title: "Skyline", subtitle: "Urban" },
-      { id: 253, title: "Subway", subtitle: "Transit" },
-      { id: 263, title: "Cafe", subtitle: "Lifestyle" },
-      { id: 273, title: "Market", subtitle: "Shopping" },
-      { id: 283, title: "Park", subtitle: "Green Space" },
-      { id: 293, title: "Bridge", subtitle: "Infrastructure" },
-      { id: 303, title: "Plaza", subtitle: "Public Space" }
-    ]
-  },
-  {
-    id: 3,
-    headline: "Travel Memories",
-    items: [
-      { id: 314, title: "Paris", subtitle: "France" },
-      { id: 324, title: "Tokyo", subtitle: "Japan" },
-      { id: 334, title: "New York", subtitle: "USA" },
-      { id: 344, title: "London", subtitle: "UK" },
-      { id: 354, title: "Dubai", subtitle: "UAE" },
-      { id: 364, title: "Barcelona", subtitle: "Spain" },
-      { id: 374, title: "Singapore", subtitle: "Asia" },
-      { id: 384, title: "Sydney", subtitle: "Australia" },
-      { id: 394, title: "Rome", subtitle: "Italy" },
-      { id: 404, title: "Amsterdam", subtitle: "Netherlands" }
-    ]
-  }
-];
-
-// Initialize default page if empty
-if (!pages.default || !pages.default.sections || pages.default.sections.length === 0) {
-  pages.default = {
-    name: 'My Gallery',
-    sections: galleryData
-  };
-  savePages();
 }
 
-function savePages() {
-  localStorage.setItem('galleryPages', JSON.stringify(pages));
+async function fetchPage(pageId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages/${pageId}`);
+    const result = await response.json();
+    if (result.success) {
+      currentPageData = result.data;
+      return result.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching page:', error);
+    return null;
+  }
+}
+
+async function savePage(pageId, sections) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages/${pageId}/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sections })
+    });
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error('Error saving page:', error);
+    return false;
+  }
+}
+
+async function createPage(name) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const result = await response.json();
+    return result.success ? result.data : null;
+  } catch (error) {
+    console.error('Error creating page:', error);
+    return null;
+  }
+}
+
+async function deletePage(pageId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/pages/${pageId}`, {
+      method: 'DELETE'
+    });
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error('Error deleting page:', error);
+    return false;
+  }
+}
+
+async function createShareLink(pageId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/share/${pageId}`, {
+      method: 'POST'
+    });
+    const result = await response.json();
+    return result.success ? result.data : null;
+  } catch (error) {
+    console.error('Error creating share link:', error);
+    return null;
+  }
+}
+
+async function fetchSharedPage(shortCode) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/share/${shortCode}`);
+    const result = await response.json();
+    if (result.success) {
+      currentPageData = result.data;
+      return result.data;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching shared page:', error);
+    return null;
+  }
 }
 
 function getCurrentPageData() {
-  return pages[currentPage] || pages.default;
+  return currentPageData || { name: 'My Gallery', sections: [] };
 }
 
 // Generate dynamic content
@@ -93,6 +120,35 @@ function generateGallery() {
   
   const pageData = getCurrentPageData();
   let html = '';
+  
+  if (!pageData.sections || pageData.sections.length === 0) {
+    html = `
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.3;">
+          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+        </svg>
+        <h3>No sections yet</h3>
+        <p>${isSettingsMode ? 'Click "Add New Section" to get started' : 'Enable Settings Mode to add content'}</p>
+      </div>
+    `;
+    
+    if (isSettingsMode) {
+      html += `
+        <div class="add-section-wrapper">
+          <button class="btn btn-add-section" id="addSection">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            Add New Section
+          </button>
+        </div>
+      `;
+    }
+    
+    container.innerHTML = html;
+    if (isSettingsMode) attachSettingsListeners();
+    return;
+  }
   
   pageData.sections.forEach((section, index) => {
     const sectionId = section.id || Date.now() + index;
@@ -122,11 +178,12 @@ function generateGallery() {
         <ul class="hs lightgallery-${sectionId}">
     `;
     
-    section.items.forEach(item => {
-      const imgUrl = item.imageUrl || `https://picsum.photos/id/${item.id}/300/300`;
-      const imgLarge = item.imageLarge || `https://picsum.photos/id/${item.id}/1200/1200`;
-      
-      html += `
+    if (section.items && section.items.length > 0) {
+      section.items.forEach(item => {
+        const imgUrl = item.image_url || item.imageUrl || `https://picsum.photos/300/300`;
+        const imgLarge = item.image_large || item.imageLarge || item.image_url || item.imageUrl || `https://picsum.photos/1200/1200`;
+        
+        html += `
           <li class="hs__item" data-item-id="${item.id}">
             ${isSettingsMode ? `
               <div class="item-actions">
@@ -147,11 +204,12 @@ function generateGallery() {
             </a>
             <div class="hs__item__description">
               <span class="hs__item__title">${item.title}</span>
-              <span class="hs__item__subtitle">${item.subtitle}</span>
+              <span class="hs__item__subtitle">${item.subtitle || ''}</span>
             </div>
           </li>
-      `;
-    });
+        `;
+      });
+    }
     
     html += `
         </ul>
@@ -178,7 +236,7 @@ function generateGallery() {
   // Initialize LightGallery for each section (only if not in settings mode)
   if (!isSettingsMode) {
     pageData.sections.forEach((section) => {
-      const sectionId = section.id || section.id;
+      const sectionId = section.id;
       const galleryElement = document.querySelector(`.lightgallery-${sectionId}`);
       if (galleryElement) {
         lightGallery(galleryElement, {
@@ -264,8 +322,6 @@ if (navToggle && navDropdown) {
   });
 }
 
-// Lightbox functionality removed - using LightGallery instead
-
 // Wait for jQuery and images to load
 $(document).ready(function() {
   setTimeout(function() {
@@ -340,24 +396,41 @@ function initHorizontalScroll() {
 // Initialize gallery on page load
 $(document).ready(function() {
   checkViewMode();
-  generateGallery();
   initializeModals();
   initializeMenuHandlers();
 });
 
 // Check if in view mode from URL
-function checkViewMode() {
+async function checkViewMode() {
   const urlParams = new URLSearchParams(window.location.search);
-  const pageId = urlParams.get('p');
-  const view = urlParams.get('view');
+  const shortCode = urlParams.get('share');
+  const pageId = urlParams.get('page');
   
-  if (pageId && view === 'share') {
-    currentPage = pageId;
+  if (shortCode) {
+    // Shared view mode
     isViewMode = true;
     isSettingsMode = false;
-    
-    // Hide navbar in view mode
     document.querySelector('.navbar').style.display = 'none';
+    
+    const data = await fetchSharedPage(shortCode);
+    if (data) {
+      generateGallery();
+    } else {
+      document.getElementById('mainContainer').innerHTML = '<div class="empty-state"><h3>Share link not found</h3></div>';
+    }
+  } else {
+    // Normal mode - load page
+    if (pageId) {
+      currentPage = pageId;
+    }
+    await loadCurrentPage();
+  }
+}
+
+async function loadCurrentPage() {
+  const data = await fetchPage(currentPage);
+  if (data) {
+    generateGallery();
   }
 }
 
@@ -444,11 +517,15 @@ function openImageModal(mode, sectionId, itemId = null) {
     if (section) {
       const item = section.items.find(i => i.id == itemId);
       if (item) {
-        document.getElementById('imageUrl').value = item.imageUrl || '';
-        document.getElementById('imageTitle').value = item.title || '';
-        document.getElementById('imageSubtitle').value = item.subtitle || '';
-        document.getElementById('imageTitle2').value = item.title || '';
-        document.getElementById('imageSubtitle2').value = item.subtitle || '';
+        const url = item.image_url || item.imageUrl || '';
+        const title = item.title || '';
+        const subtitle = item.subtitle || '';
+        
+        document.getElementById('imageUrl').value = url;
+        document.getElementById('imageTitle').value = title;
+        document.getElementById('imageSubtitle').value = subtitle;
+        document.getElementById('imageTitle2').value = title;
+        document.getElementById('imageSubtitle2').value = subtitle;
       }
     }
   }
@@ -463,7 +540,7 @@ function closeImageModal() {
   uploadedImageData = null;
 }
 
-function saveImageData() {
+async function saveImageData() {
   const pageData = getCurrentPageData();
   const section = pageData.sections.find(s => s.id == editingSection);
   
@@ -496,16 +573,21 @@ function saveImageData() {
     // Edit existing item
     const item = section.items.find(i => i.id == editingItem);
     if (item) {
+      item.image_url = imageUrl;
       item.imageUrl = imageUrl;
+      item.image_large = imageLarge;
       item.imageLarge = imageLarge;
       item.title = title;
       item.subtitle = subtitle;
     }
   } else {
     // Add new item
+    if (!section.items) section.items = [];
     const newItem = {
       id: Date.now(),
+      image_url: imageUrl,
       imageUrl: imageUrl,
+      image_large: imageLarge,
       imageLarge: imageLarge,
       title: title,
       subtitle: subtitle
@@ -513,12 +595,17 @@ function saveImageData() {
     section.items.push(newItem);
   }
   
-  savePages();
-  closeImageModal();
-  generateGallery();
+  // Save to database
+  const saved = await savePage(currentPage, pageData.sections);
+  if (saved) {
+    closeImageModal();
+    await loadCurrentPage();
+  } else {
+    alert('Error saving image');
+  }
 }
 
-function deleteImage(sectionId, itemId) {
+async function deleteImage(sectionId, itemId) {
   if (!confirm('Are you sure you want to delete this image?')) return;
   
   const pageData = getCurrentPageData();
@@ -526,17 +613,21 @@ function deleteImage(sectionId, itemId) {
   
   if (section) {
     section.items = section.items.filter(i => i.id != itemId);
-    savePages();
-    generateGallery();
+    const saved = await savePage(currentPage, pageData.sections);
+    if (saved) {
+      await loadCurrentPage();
+    }
   }
 }
 
 // Section Functions
-function addNewSection() {
+async function addNewSection() {
   const sectionName = prompt('Enter section name:');
   if (!sectionName) return;
   
   const pageData = getCurrentPageData();
+  if (!pageData.sections) pageData.sections = [];
+  
   const newSection = {
     id: Date.now(),
     headline: sectionName,
@@ -544,39 +635,44 @@ function addNewSection() {
   };
   
   pageData.sections.push(newSection);
-  savePages();
-  generateGallery();
+  const saved = await savePage(currentPage, pageData.sections);
+  if (saved) {
+    await loadCurrentPage();
+  }
 }
 
-function deleteSection(sectionId) {
+async function deleteSection(sectionId) {
   if (!confirm('Are you sure you want to delete this section?')) return;
   
   const pageData = getCurrentPageData();
   pageData.sections = pageData.sections.filter(s => s.id != sectionId);
-  savePages();
-  generateGallery();
+  const saved = await savePage(currentPage, pageData.sections);
+  if (saved) {
+    await loadCurrentPage();
+  }
 }
 
 // Page Manager Functions
-function openPageManager() {
+async function openPageManager() {
   const modal = document.getElementById('pageModal');
   const pageList = document.getElementById('pageList');
   
+  const pages = await fetchPages();
+  
   let html = '<div class="page-items">';
   
-  Object.keys(pages).forEach(pageId => {
-    const page = pages[pageId];
-    const isCurrent = pageId === currentPage;
+  pages.forEach(page => {
+    const isCurrent = page.id === currentPage;
     
     html += `
       <div class="page-item ${isCurrent ? 'active' : ''}">
         <div class="page-item__info">
           <span class="page-item__name">${page.name}</span>
-          <span class="page-item__id">${pageId}</span>
+          <span class="page-item__id">${page.id}</span>
         </div>
         <div class="page-item__actions">
-          ${!isCurrent ? `<button class="btn-sm" onclick="switchPage('${pageId}')">Switch</button>` : '<span class="badge">Current</span>'}
-          ${pageId !== 'default' ? `<button class="btn-sm btn-danger" onclick="deletePage('${pageId}')">Delete</button>` : ''}
+          ${!isCurrent ? `<button class="btn-sm" onclick="switchPage('${page.id}')">Switch</button>` : '<span class="badge">Current</span>'}
+          ${page.id !== 'default' ? `<button class="btn-sm btn-danger" onclick="deletePageConfirm('${page.id}')">Delete</button>` : ''}
         </div>
       </div>
     `;
@@ -593,69 +689,57 @@ function openCreatePageModal() {
   document.getElementById('pageModal').style.display = 'none';
 }
 
-function createNewPage() {
+async function createNewPage() {
   const name = document.getElementById('pageName').value.trim();
   if (!name) {
     alert('Please enter a page name');
     return;
   }
   
-  const pageId = 'page_' + Date.now();
-  pages[pageId] = {
-    name: name,
-    sections: []
-  };
-  
-  savePages();
-  currentPage = pageId;
-  
-  document.getElementById('createPageModal').style.display = 'none';
-  generateGallery();
+  const result = await createPage(name);
+  if (result) {
+    currentPage = result.id;
+    document.getElementById('createPageModal').style.display = 'none';
+    await loadCurrentPage();
+  }
 }
 
-function switchPage(pageId) {
+async function switchPage(pageId) {
   currentPage = pageId;
   document.getElementById('pageModal').style.display = 'none';
-  generateGallery();
+  await loadCurrentPage();
 }
 
-function deletePage(pageId) {
+async function deletePageConfirm(pageId) {
   if (!confirm('Are you sure you want to delete this page?')) return;
   
-  delete pages[pageId];
-  savePages();
-  
-  if (currentPage === pageId) {
-    currentPage = 'default';
+  const success = await deletePage(pageId);
+  if (success) {
+    if (currentPage === pageId) {
+      currentPage = 'default';
+      await loadCurrentPage();
+    }
+    openPageManager();
   }
-  
-  openPageManager();
-  generateGallery();
 }
 
 // Share Functions
-function openShareModal() {
+async function openShareModal() {
   const modal = document.getElementById('shareModal');
   const shareLink = document.getElementById('shareLink');
   
-  // Generate shortened link
-  const baseUrl = window.location.origin + window.location.pathname;
-  const shortCode = generateShortCode(currentPage);
-  const fullLink = `${baseUrl}?p=${currentPage}&view=share&c=${shortCode}`;
+  // Create share link
+  const result = await createShareLink(currentPage);
   
-  shareLink.value = fullLink;
-  modal.style.display = 'flex';
-}
-
-function generateShortCode(pageId) {
-  // Simple hash function for demo
-  let hash = 0;
-  const str = pageId + Date.now();
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash = hash & hash;
+  if (result) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const fullLink = `${baseUrl}?share=${result.shortCode}`;
+    shareLink.value = fullLink;
+  } else {
+    shareLink.value = 'Error creating share link';
   }
-  return Math.abs(hash).toString(36).substring(0, 6);
+  
+  modal.style.display = 'flex';
 }
 
 function copyShareLink() {

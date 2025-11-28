@@ -39,9 +39,9 @@
           <span></span>
         </button>
         <ul class="navbar__dropdown" id="navDropdown">
-          <li><a href="#page">Page</a></li>
-          <li><a href="#location">Location</a></li>
-          <li><a href="#settings">Settings</a></li>
+          <li><a href="#" id="menuPage">Page Manager</a></li>
+          <li><a href="#" id="menuSettings">Settings Mode</a></li>
+          <li><a href="#" id="menuShare">Share Page</a></li>
         </ul>
       </div>
     </div>
@@ -50,13 +50,139 @@
 <div class="container" id="mainContainer">
   <!-- Content will be dynamically generated here -->
 </div>
+
+<!-- Settings Control Bar -->
+<div class="settings-bar" id="settingsBar" style="display: none;">
+  <div class="settings-bar__content">
+    <div class="settings-bar__info">
+      <span class="settings-bar__label">Settings Mode</span>
+      <span class="settings-bar__status">Editing Enabled</span>
+    </div>
+    <button class="settings-bar__btn" id="exitSettings">Exit Settings</button>
+  </div>
+</div>
+
+<!-- Modal for Add/Edit Image -->
+<div class="modal" id="imageModal">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h3 class="modal__title" id="imageModalTitle">Add Image</h3>
+      <button class="modal__close" id="closeImageModal">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="modal__tabs">
+        <button class="modal__tab active" data-tab="url">Add by URL</button>
+        <button class="modal__tab" data-tab="upload">Upload Image</button>
+      </div>
+      
+      <div class="modal__tab-content active" id="urlTab">
+        <div class="form-group">
+          <label>Image URL</label>
+          <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="imageTitle" placeholder="Image Title">
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" id="imageSubtitle" placeholder="Image Subtitle">
+        </div>
+      </div>
+      
+      <div class="modal__tab-content" id="uploadTab">
+        <div class="form-group">
+          <label>Upload Image</label>
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="imageFile" accept="image/*" style="display: none;">
+            <div class="upload-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+              </svg>
+              <p>Click to upload or drag and drop</p>
+            </div>
+            <img id="imagePreview" style="display: none; max-width: 100%; border-radius: 8px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="imageTitle2" placeholder="Image Title">
+        </div>
+        <div class="form-group">
+          <label>Subtitle</label>
+          <input type="text" id="imageSubtitle2" placeholder="Image Subtitle">
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary" id="cancelImage">Cancel</button>
+      <button class="btn btn-primary" id="saveImage">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Page Manager -->
+<div class="modal" id="pageModal">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h3 class="modal__title">Page Manager</h3>
+      <button class="modal__close" id="closePageModal">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="page-list" id="pageList">
+        <!-- Page list will be generated here -->
+      </div>
+      <button class="btn btn-primary" id="addNewPage">+ Create New Page</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Create/Edit Page -->
+<div class="modal" id="createPageModal">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h3 class="modal__title" id="createPageTitle">Create New Page</h3>
+      <button class="modal__close" id="closeCreatePageModal">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label>Page Name</label>
+        <input type="text" id="pageName" placeholder="My Gallery">
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary" id="cancelPage">Cancel</button>
+      <button class="btn btn-primary" id="savePage">Create Page</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Share Link -->
+<div class="modal" id="shareModal">
+  <div class="modal__content">
+    <div class="modal__header">
+      <h3 class="modal__title">Share Page</h3>
+      <button class="modal__close" id="closeShareModal">&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label>Share Link (View Only)</label>
+        <div class="share-link-container">
+          <input type="text" id="shareLink" readonly>
+          <button class="btn btn-primary" id="copyLink">Copy</button>
+        </div>
+        <small>Anyone with this link can view your gallery (no editing allowed)</small>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- partial -->
   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/lightgallery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/zoom/lg-zoom.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/thumbnail/lg-thumbnail.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/fullscreen/lg-fullscreen.min.js"></script>
-  <script  src="./script.js"></script>
+  <script  src="./api-script.js"></script>
 
 </body>
 </html>
