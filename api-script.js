@@ -617,7 +617,25 @@ function openImageModal(mode, sectionId, itemId = null) {
 }
 
 function closeImageModal() {
-  document.getElementById('imageModal').style.display = 'none';
+  const modal = document.getElementById('imageModal');
+  const saveBtn = document.getElementById('saveImage');
+  const cancelBtn = document.getElementById('cancelImage');
+  
+  // Reset button state
+  saveBtn.disabled = false;
+  cancelBtn.disabled = false;
+  saveBtn.textContent = 'Save';
+  
+  // Reset form
+  document.getElementById('imageUrl').value = '';
+  document.getElementById('imageTitle').value = '';
+  document.getElementById('imageSubtitle').value = '';
+  document.getElementById('imageTitle2').value = '';
+  document.getElementById('imageSubtitle2').value = '';
+  document.getElementById('imagePreview').style.display = 'none';
+  document.querySelector('.upload-placeholder').style.display = 'flex';
+  
+  modal.style.display = 'none';
   editingSection = null;
   editingItem = null;
   uploadedImageData = null;
