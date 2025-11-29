@@ -149,6 +149,37 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+// Loading Overlay Functions
+function showLoadingOverlay(message = 'Loading...') {
+  let overlay = document.getElementById('loadingOverlay');
+  
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loadingOverlay';
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = `
+      <div class="loading-spinner">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="loading-text"></span>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+  }
+  
+  overlay.querySelector('.loading-text').textContent = message;
+  setTimeout(() => overlay.classList.add('show'), 10);
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.classList.remove('show');
+  }
+}
+
 // ImgBB Upload Function
 async function uploadToImgBB(base64Image) {
   try {
@@ -519,16 +550,34 @@ async function loadCurrentPage() {
 
 // Settings Mode Functions
 function enableSettingsMode() {
-  isSettingsMode = true;
-  isViewMode = false;
-  document.getElementById('settingsBar').style.display = 'block';
-  generateGallery();
+  // Show loading overlay
+  showLoadingOverlay('Entering Settings Mode...');
+  
+  // Small delay for smooth transition
+  setTimeout(() => {
+    isSettingsMode = true;
+    isViewMode = false;
+    document.getElementById('settingsBar').style.display = 'block';
+    generateGallery();
+    
+    // Hide loading overlay
+    hideLoadingOverlay();
+  }, 300);
 }
 
 function disableSettingsMode() {
-  isSettingsMode = false;
-  document.getElementById('settingsBar').style.display = 'none';
-  generateGallery();
+  // Show loading overlay
+  showLoadingOverlay('Exiting Settings Mode...');
+  
+  // Small delay for smooth transition
+  setTimeout(() => {
+    isSettingsMode = false;
+    document.getElementById('settingsBar').style.display = 'none';
+    generateGallery();
+    
+    // Hide loading overlay
+    hideLoadingOverlay();
+  }, 300);
 }
 
 function attachSettingsListeners() {

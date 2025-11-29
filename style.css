@@ -1541,6 +1541,49 @@ body.theme-ocean .page-share-item__link input {
   border-color: rgba(255, 59, 48, 0.3);
 }
 
+/* Loading Overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.loading-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-spinner svg {
+  color: #007aff;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
 /* Light Mode Toast */
 body.theme-light .toast {
   background: rgba(0, 0, 0, 0.85);
@@ -1555,6 +1598,14 @@ body.theme-light .toast.error {
   background: rgba(255, 59, 48, 0.95);
 }
 
+body.theme-light .loading-overlay {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+body.theme-light .loading-text {
+  color: #1d1d1f;
+}
+
 /* Ocean Mode Toast */
 body.theme-ocean .toast {
   background: rgba(13, 27, 42, 0.95);
@@ -1567,4 +1618,12 @@ body.theme-ocean .toast.success {
 
 body.theme-ocean .toast.error {
   background: rgba(255, 59, 48, 0.95);
+}
+
+body.theme-ocean .loading-overlay {
+  background: rgba(10, 25, 41, 0.9);
+}
+
+body.theme-ocean .loading-spinner svg {
+  color: #64b5f6;
 }
