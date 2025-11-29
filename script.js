@@ -105,8 +105,8 @@ async function uploadToImgBB(base64Image) {
     
     if (result.success) {
       return {
-        url: result.data.url,
-        thumb: result.data.thumb.url,
+        url: result.data.url, // Full size for lightbox
+        thumb: result.data.medium?.url || result.data.thumb.url, // Medium size for grid (faster)
         medium: result.data.medium?.url || result.data.url,
         deleteUrl: result.data.delete_url
       };
