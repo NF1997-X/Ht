@@ -157,21 +157,16 @@
   </div>
 </div>
 
-<!-- Modal for Share Link -->
-<div class="modal" id="shareModal">
+<!-- Modal for Share Page List -->
+<div class="modal modal-large" id="shareModal">
   <div class="modal__content">
     <div class="modal__header">
-      <h3 class="modal__title">Share Page</h3>
+      <h3 class="modal__title">Share Pages</h3>
       <button class="modal__close" id="closeShareModal">&times;</button>
     </div>
     <div class="modal__body">
-      <div class="form-group">
-        <label>Share Link (View Only)</label>
-        <div class="share-link-container">
-          <input type="text" id="shareLink" readonly>
-          <button class="btn btn-primary" id="copyLink">Copy</button>
-        </div>
-        <small>Anyone with this link can view your gallery (no editing allowed)</small>
+      <div class="page-share-list" id="pageShareList">
+        <!-- Page list with share links will be generated here -->
       </div>
     </div>
   </div>

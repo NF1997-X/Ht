@@ -881,33 +881,129 @@ async function deletePageConfirm(pageId, pageName) {
 // Share Functions
 async function openShareModal() {
   const modal = document.getElementById('shareModal');
-  const shareLink = document.getElementById('shareLink');
+  const pageShareList = document.getElementById('pageShareList');
   
-  // Create share link
-  const result = await createShareLink(currentPage);
+  // Fetch all pages
+  const pages = await fetchPages();
   
-  if (result) {
+  let html = '';
+  
+  for (const page of pages) {
     const baseUrl = window.location.origin + window.location.pathname;
-    const fullLink = `${baseUrl}?share=${result.shortCode}`;
-    shareLink.value = fullLink;
-  } else {
-    shareLink.value = 'Error creating share link';
+    const fullLink = `${baseUrl}?share=${page.share_code}`;
+    
+    html += `
+      <div class="page-share-item">
+        <div class="page-share-item__header">
+          <span class="page-share-item__title">${page.name}</span>
+        </div>
+        <div class="page-share-item__link">
+          <input type="text" value="${fullLink}" readonly id="shareLink_${page.id}">
+        </div>
+        <div class="page-share-item__actions">
+          <button class="btn btn-sm btn-primary btn-icon" onclick="viewSharedPage('${page.share_code}')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            </svg>
+            View
+          </button>
+          <button class="btn btn-sm btn-primary btn-icon" onclick="openInNewTab('${fullLink}')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+            </svg>
+            Open
+          </button>
+          <button class="btn btn-sm btn-primary btn-icon" onclick="copyShareLink('${page.id}')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
+            Copy
+          </button>
+          <button class="btn btn-sm btn-primary btn-icon" onclick="shareToSocial('${fullLink}', '${page.name.replace(/'/g, "\\'")}')">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+            </svg>
+            Share
+          </button>
+        </div>
+      </div>
+    `;
   }
   
+  if (pages.length === 0) {
+    html = '<p style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">No pages found. Create a page first!</p>';
+  }
+  
+  pageShareList.innerHTML = html;
   modal.style.display = 'flex';
 }
 
-function copyShareLink() {
-  const shareLink = document.getElementById('shareLink');
-  shareLink.select();
-  document.execCommand('copy');
+function copyShareLink(pageId) {
+  const shareLink = document.getElementById(`shareLink_${pageId}`);
+  if (!shareLink) return;
   
-  const btn = document.getElementById('copyLink');
-  const originalText = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => {
-    btn.textContent = originalText;
-  }, 2000);
+  shareLink.select();
+  shareLink.setSelectionRange(0, 99999); // For mobile
+  
+  try {
+    navigator.clipboard.writeText(shareLink.value).then(() => {
+      alert('✅ Link copied to clipboard!');
+    }).catch(() => {
+      document.execCommand('copy');
+      alert('✅ Link copied to clipboard!');
+    });
+  } catch (err) {
+    document.execCommand('copy');
+    alert('✅ Link copied to clipboard!');
+  }
+}
+
+function viewSharedPage(shareCode) {
+  const baseUrl = window.location.origin + window.location.pathname;
+  window.location.href = `${baseUrl}?share=${shareCode}`;
+}
+
+function openInNewTab(url) {
+  window.open(url, '_blank');
+}
+
+function shareToSocial(url, pageName) {
+  const text = `Check out my gallery: ${pageName}`;
+  
+  // Check if Web Share API is available
+  if (navigator.share) {
+    navigator.share({
+      title: pageName,
+      text: text,
+      url: url
+    }).catch((error) => {
+      console.log('Error sharing:', error);
+      fallbackShare(url, text);
+    });
+  } else {
+    fallbackShare(url, text);
+  }
+}
+
+function fallbackShare(url, text) {
+  const options = [
+    { name: 'WhatsApp', url: `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}` },
+    { name: 'Telegram', url: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}` },
+    { name: 'Twitter', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}` },
+    { name: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` }
+  ];
+  
+  let message = 'Share via:\n\n';
+  options.forEach((opt, idx) => {
+    message += `${idx + 1}. ${opt.name}\n`;
+  });
+  
+  const choice = prompt(message + '\nEnter number (1-4):');
+  const selected = parseInt(choice) - 1;
+  
+  if (selected >= 0 && selected < options.length) {
+    window.open(options[selected].url, '_blank');
+  }
 }
 
 // Modal Initialization
@@ -1004,8 +1100,6 @@ function initializeModals() {
   document.getElementById('closeShareModal')?.addEventListener('click', () => {
     document.getElementById('shareModal').style.display = 'none';
   });
-  
-  document.getElementById('copyLink')?.addEventListener('click', copyShareLink);
   
   // Close modals on outside click
   window.addEventListener('click', function(e) {
