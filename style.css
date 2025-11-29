@@ -1277,6 +1277,23 @@ body.theme-light .page-item__name {
   color: #1d1d1f;
 }
 
+body.theme-light .modal__tab {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+body.theme-light .modal__tab.active {
+  color: #1d1d1f;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+body.theme-light .upload-placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+body.theme-light .upload-placeholder p {
+  color: rgba(0, 0, 0, 0.6);
+}
+
 body.theme-light .form-group input[type="text"] {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.1);
