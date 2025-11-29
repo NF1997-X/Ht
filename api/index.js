@@ -44,13 +44,14 @@ module.exports = async (req, res) => {
     if (path === '/pages' && method === 'POST') {
       const { name } = req.body;
       const pageId = 'page_' + Date.now();
+      const shareCode = nanoid(8);
       
       await sql`
-        INSERT INTO pages (id, name) 
-        VALUES (${pageId}, ${name})
+        INSERT INTO pages (id, name, share_code) 
+        VALUES (${pageId}, ${name}, ${shareCode})
       `;
       
-      return res.status(200).json({ success: true, data: { id: pageId, name } });
+      return res.status(200).json({ success: true, data: { id: pageId, name, share_code: shareCode } });
     }
 
     // Get single page
@@ -152,47 +153,36 @@ module.exports = async (req, res) => {
       return res.status(200).json({ success: true, message: 'Page saved successfully' });
     }
 
-    // Create share link
-    if (path.match(/\/share\/[^/]+$/) && method === 'POST') {
+    // Get share info for page (permanent share link)
+    if (path.match(/\/pages\/[^/]+\/share$/) && method === 'GET') {
       const pageId = path.split('/')[2];
       
-      const pages = await sql`SELECT id FROM pages WHERE id = ${pageId}`;
+      const pages = await sql`SELECT id, name, share_code FROM pages WHERE id = ${pageId}`;
       if (pages.length === 0) {
         return res.status(404).json({ success: false, error: 'Page not found' });
       }
       
-      const shortCode = nanoid(8);
+      const page = pages[0];
+      const shareUrl = `${req.headers.origin || 'https://your-domain.vercel.app'}/view/${page.share_code}`;
       
-      await sql`
-        INSERT INTO share_links (short_code, page_id) 
-        VALUES (${shortCode}, ${pageId})
-      `;
-      
-      return res.status(200).json({ success: true, data: { shortCode } });
+      return res.status(200).json({ success: true, data: { shortCode: page.share_code, shareUrl } });
     }
 
-    // Get shared page
+    // Get shared page by share_code
     if (path.match(/\/share\/[a-zA-Z0-9]+$/) && method === 'GET') {
       const shortCode = path.split('/')[2];
       
-      const links = await sql`
-        SELECT page_id FROM share_links WHERE short_code = ${shortCode}
-      `;
-      
-      if (links.length === 0) {
-        return res.status(404).json({ success: false, error: 'Share link not found' });
-      }
-      
-      const pageId = links[0].page_id;
-      
-      const pages = await sql`SELECT * FROM pages WHERE id = ${pageId}`;
+      // Get page data by share_code
+      const pages = await sql`SELECT * FROM pages WHERE share_code = ${shortCode}`;
       
       if (pages.length === 0) {
         return res.status(404).json({ success: false, error: 'Page not found' });
       }
       
       const page = pages[0];
+      const pageId = page.id;
       
+      // Get sections and items
       const sections = await sql`
         SELECT * FROM sections 
         WHERE page_id = ${pageId} 
