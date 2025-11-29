@@ -612,6 +612,22 @@ function closeImageModal() {
 
 async function saveImageData() {
   console.log('=== SAVE IMAGE DEBUG ===');
+  
+  // Get save button and disable it
+  const saveBtn = document.getElementById('saveImage');
+  const cancelBtn = document.getElementById('cancelImage');
+  
+  // Prevent double click
+  if (saveBtn.disabled) {
+    return;
+  }
+  
+  // Disable buttons and show loading
+  saveBtn.disabled = true;
+  cancelBtn.disabled = true;
+  const originalText = saveBtn.textContent;
+  saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg> Saving...';
+  
   const pageData = getCurrentPageData();
   console.log('Page Data:', pageData);
   console.log('Editing Section:', editingSection);
@@ -621,6 +637,9 @@ async function saveImageData() {
   if (!section) {
     console.error('Section not found!');
     alert('Error: Section not found');
+    saveBtn.disabled = false;
+    cancelBtn.disabled = false;
+    saveBtn.textContent = originalText;
     return;
   }
   
@@ -636,6 +655,9 @@ async function saveImageData() {
   } else {
     if (!uploadedImageData) {
       alert('Please upload an image');
+      saveBtn.disabled = false;
+      cancelBtn.disabled = false;
+      saveBtn.textContent = originalText;
       return;
     }
     
@@ -645,13 +667,13 @@ async function saveImageData() {
     // Upload to ImgBB
     try {
       console.log('Uploading to ImgBB...');
+      saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg> Uploading...';
+      
       const uploadResult = await uploadToImgBB(uploadedImageData);
       console.log('ImgBB upload success:', uploadResult);
       
       imageUrl = uploadResult.thumb; // Use thumbnail for grid
       imageLarge = uploadResult.url; // Use full size for lightbox
-      
-      alert('Image uploaded to ImgBB successfully!');
     } catch (error) {
       console.error('ImgBB upload failed:', error);
       alert('Failed to upload image to ImgBB. Using base64 instead.');
@@ -665,6 +687,9 @@ async function saveImageData() {
   
   if (!imageUrl || !title) {
     alert('Please fill in required fields (URL and Title)');
+    saveBtn.disabled = false;
+    cancelBtn.disabled = false;
+    saveBtn.textContent = originalText;
     return;
   }
   
@@ -712,10 +737,16 @@ async function saveImageData() {
     } else {
       console.error('❌ Save failed - API returned false');
       alert('Error saving image to database. Check console for details.');
+      saveBtn.disabled = false;
+      cancelBtn.disabled = false;
+      saveBtn.textContent = originalText;
     }
   } catch (error) {
     console.error('❌ Save error:', error);
     alert('Error saving image: ' + error.message);
+    saveBtn.disabled = false;
+    cancelBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
