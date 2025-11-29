@@ -136,6 +136,19 @@ function getCurrentPageData() {
   return currentPageData || { name: 'My Gallery', sections: [] };
 }
 
+// Toast Notification Function
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  const toastMessage = document.getElementById('toastMessage');
+  
+  toastMessage.textContent = message;
+  toast.className = 'toast show ' + type;
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
 // ImgBB Upload Function
 async function uploadToImgBB(base64Image) {
   try {
@@ -674,12 +687,19 @@ async function saveImageData() {
       
       imageUrl = uploadResult.thumb; // Use thumbnail for grid
       imageLarge = uploadResult.url; // Use full size for lightbox
+      
+      // Show success toast
+      showToast('✅ Image uploaded successfully!', 'success');
+      
+      // Change button text
+      saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg> Saving...';
     } catch (error) {
       console.error('ImgBB upload failed:', error);
       alert('Failed to upload image to ImgBB. Using base64 instead.');
       // Fallback to base64
       imageUrl = uploadedImageData;
       imageLarge = uploadedImageData;
+      saveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/></svg> Saving...';
     }
   }
   
@@ -732,18 +752,19 @@ async function saveImageData() {
     
     if (saved) {
       console.log('✅ Image saved successfully');
+      showToast('✅ Image saved successfully!', 'success');
       closeImageModal();
       await loadCurrentPage();
     } else {
       console.error('❌ Save failed - API returned false');
-      alert('Error saving image to database. Check console for details.');
+      showToast('❌ Failed to save image', 'error');
       saveBtn.disabled = false;
       cancelBtn.disabled = false;
       saveBtn.textContent = originalText;
     }
   } catch (error) {
     console.error('❌ Save error:', error);
-    alert('Error saving image: ' + error.message);
+    showToast('❌ Error: ' + error.message, 'error');
     saveBtn.disabled = false;
     cancelBtn.disabled = false;
     saveBtn.textContent = originalText;
