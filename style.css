@@ -687,7 +687,7 @@ body.theme-ocean .hs__item__subtitle {
   background: transparent;
   position: relative;
   min-height: 100vh;
-  padding-top: 120px;
+  padding-top: 160px;
 }
 .container:after {
   content: '';
@@ -702,7 +702,7 @@ body.theme-ocean .hs__item__subtitle {
 @media only screen and (min-width: 990px) {
   .container {
     padding: calc(10px * 4) calc(10px * 8);
-    padding-top: 140px;
+    padding-top: 180px;
   }
 }
 
