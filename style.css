@@ -179,7 +179,7 @@
   -webkit-overflow-scrolling: touch;
   margin: 0;
   scroll-behavior: smooth;
-  padding: 0 20px;
+  padding: 0 12px;
 }
 .hs__header {
   display: flex;
@@ -243,7 +243,7 @@
   width: 120px;
   min-width: 120px;
   max-width: 120px;
-  margin: 3px;
+  margin: 6px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -278,7 +278,7 @@
     width: 80px;
     min-width: 80px;
     max-width: 80px;
-    margin: 2px;
+    margin: 4px;
   }
 }
 .hs__item:last-child:after {
