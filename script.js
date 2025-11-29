@@ -1,5 +1,9 @@
 // work in progress - needs some refactoring and will drop JQuery i promise :)
 
+// ImgBB API Configuration
+const IMGBB_API_KEY = '4042c537845e8b19b443add46f4a859c';
+const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
+
 // State Management
 let currentPage = 'default';
 let isSettingsMode = false;
@@ -80,6 +84,39 @@ if (!pages.default || !pages.default.sections || pages.default.sections.length =
 
 function savePages() {
   localStorage.setItem('galleryPages', JSON.stringify(pages));
+}
+
+// ImgBB Upload Function
+async function uploadToImgBB(base64Image) {
+  try {
+    // Remove data:image/xxx;base64, prefix if exists
+    const base64Data = base64Image.split(',')[1] || base64Image;
+    
+    const formData = new FormData();
+    formData.append('key', IMGBB_API_KEY);
+    formData.append('image', base64Data);
+    
+    const response = await fetch(IMGBB_UPLOAD_URL, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      return {
+        url: result.data.url,
+        thumb: result.data.thumb.url,
+        medium: result.data.medium?.url || result.data.url,
+        deleteUrl: result.data.delete_url
+      };
+    } else {
+      throw new Error(result.error?.message || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('ImgBB upload error:', error);
+    throw error;
+  }
 }
 
 function getCurrentPageData() {
@@ -467,7 +504,7 @@ function closeImageModal() {
   uploadedImageData = null;
 }
 
-function saveImageData() {
+async function saveImageData() {
   const pageData = getCurrentPageData();
   const section = pageData.sections.find(s => s.id == editingSection);
   
@@ -485,10 +522,27 @@ function saveImageData() {
       alert('Please upload an image');
       return;
     }
-    imageUrl = uploadedImageData;
-    imageLarge = uploadedImageData;
+    
     title = document.getElementById('imageTitle2').value.trim();
     subtitle = document.getElementById('imageSubtitle2').value.trim();
+    
+    // Upload to ImgBB
+    try {
+      console.log('Uploading to ImgBB...');
+      const uploadResult = await uploadToImgBB(uploadedImageData);
+      console.log('ImgBB upload success:', uploadResult);
+      
+      imageUrl = uploadResult.thumb; // Use thumbnail for grid
+      imageLarge = uploadResult.url; // Use full size for lightbox
+      
+      alert('Image uploaded to ImgBB successfully!');
+    } catch (error) {
+      console.error('ImgBB upload failed:', error);
+      alert('Failed to upload image to ImgBB. Using base64 instead.');
+      // Fallback to base64
+      imageUrl = uploadedImageData;
+      imageLarge = uploadedImageData;
+    }
   }
   
   if (!imageUrl || !title) {
