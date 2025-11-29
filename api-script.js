@@ -109,8 +109,17 @@ async function createShareLink(pageId) {
 
 async function fetchSharedPage(shortCode) {
   try {
+    console.log('Fetching shared page:', `${API_BASE_URL}/share/${shortCode}`);
     const response = await fetch(`${API_BASE_URL}/share/${shortCode}`);
+    
+    if (!response.ok) {
+      console.error('API response not ok:', response.status, response.statusText);
+      return null;
+    }
+    
     const result = await response.json();
+    console.log('API result:', result);
+    
     if (result.success) {
       currentPageData = result.data;
       return result.data;
@@ -118,6 +127,7 @@ async function fetchSharedPage(shortCode) {
     return null;
   } catch (error) {
     console.error('Error fetching shared page:', error);
+    console.error('Make sure backend server is running on http://localhost:3000');
     return null;
   }
 }
@@ -462,11 +472,21 @@ async function checkViewMode() {
     isSettingsMode = false;
     document.querySelector('.navbar').style.display = 'none';
     
+    console.log('Loading shared page with code:', shortCode);
     const data = await fetchSharedPage(shortCode);
     if (data) {
+      console.log('Shared page loaded successfully');
       generateGallery();
     } else {
-      document.getElementById('mainContainer').innerHTML = '<div class="empty-state"><h3>Share link not found</h3></div>';
+      console.error('Failed to load shared page');
+      document.getElementById('mainContainer').innerHTML = `
+        <div class="empty-state">
+          <h3>Share link not found</h3>
+          <p>This share link may have expired or does not exist.</p>
+          <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 20px;">
+            Make sure the backend server is running if you're in local development.
+          </p>
+        </div>`;
     }
   } else {
     // Normal mode - load page
