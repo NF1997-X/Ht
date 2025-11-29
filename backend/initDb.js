@@ -12,6 +12,7 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS pages (
         id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
+        share_code VARCHAR(20) UNIQUE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -60,8 +61,8 @@ async function initDatabase() {
     
     if (existingPages.length === 0) {
       await sql`
-        INSERT INTO pages (id, name) 
-        VALUES ('default', 'My Gallery')
+        INSERT INTO pages (id, name, share_code) 
+        VALUES ('default', 'My Gallery', 'default')
       `;
       console.log('✅ Default page created');
     }
